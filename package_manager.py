@@ -1,8 +1,6 @@
 import logging
-
 import path.Path
 import settings
-
 import configparser.ConfigParser
 
 
@@ -23,10 +21,20 @@ class PackageManager:
             self.build_package(problem, path_to_directory)
 
     def build_checker(self, path_to_directory, problem):
-        path_to_directory = path.Path(path_to_directory)
+        path_to_directory = path_to_directory.joinpath('checker')
+        checker_config = configparser.ConfigParser()
+
+        checker_config.add_section('build')
+        checker_config.add_section('utility')
+
         if problem.checker is None:
-            with path_to_directory.joinpath('checker', 'config.ini').open('w') as checker_config:
-                checker_config.write(settings.CONTENT_OF_CHECKERS_CONFIG_IF_CHECKER_NOT_EXISTS)
+            checker_config.set('build', 'builder', 'none')
+            checker_config.set('utility', 'call', 'std/strict/out_stdout')
+            try:
+                with path_to_directory.joinpath('config.ini').open('w') as config_file:
+                    checker_config.write(config_file)
+            except OSError:
+                logging.error('Cannot write to checker/config.ini')
         else:
             raise NotImplementedError()
 
@@ -49,7 +57,8 @@ class PackageManager:
             path_to_directory = path_to_directory.joinpath('statement', 'pdf.ini')
 
         try:
-            statement_config.write(path_to_directory.open('w'))
+            with path_to_directory.open('w') as config_file:
+                statement_config.write(config_file)
         except OSError:
             logging.error('Cannot write to statement/{0}'.format(path_to_directory.name))
 
@@ -81,13 +90,14 @@ class PackageManager:
         config.set('files', 'stdout', problem.stdout)
 
         try:
-            config.write(path_to_directory.joinpath('config.ini').open('w'))
+            with path_to_directory.joinpath('config.ini').open('w') as config_file:
+                config.write(config_file)
         except OSError:
             logging.error('Cannot write to config.ini')
 
     @staticmethod
     def make_skeleton(path_to_directory):
-        content_of_format_file = "bacs/problem/single#simple0"
+        content_of_format_file = 'bacs/problem/single#simple0'
 
         if path_to_directory.exists():
             logging.warning('{path} already exists'.format(path=path_to_directory))
@@ -97,8 +107,8 @@ class PackageManager:
             path_to_directory.joinpath('misc').makedirs_p()
             path_to_directory.joinpath('statement').makedirs_p()
             path_to_directory.joinpath('tests').makedirs_p()
-            with path_to_directory.joinpath('format').open() as file_format:
-                file_format.write(content_of_format_file)
+            with path_to_directory.joinpath('format').open() as format_file:
+                format_file.write(content_of_format_file)
         except (OSError, IOError):
             logging.error('Cannot write to {path}'.format(path_to_directory))
             return False
