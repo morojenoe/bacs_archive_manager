@@ -10,17 +10,17 @@ class PackageManager:
 
     def build_package(self, problem, path_to_directory):
         path_to_directory = path.Path(path_to_directory).joinpath(problem.ID)
-        self.make_skeleton(path_to_directory)
-        self.build_checker(path_to_directory, problem)
-        self.build_statement(path_to_directory, problem)
-        self.build_tests(path_to_directory, problem)
-        self.build_config(path_to_directory, problem)
+        self._make_skeleton(path_to_directory)
+        self._build_checker(path_to_directory, problem)
+        self._build_statement(path_to_directory, problem)
+        self._build_tests(path_to_directory, problem)
+        self._build_config(path_to_directory, problem)
 
     def build_packages(self, problems, path_to_directory):
         for problem in problems:
             self.build_package(problem, path_to_directory)
 
-    def build_checker(self, path_to_directory, problem):
+    def _build_checker(self, path_to_directory, problem):
         path_to_directory = path_to_directory.joinpath('checker')
         checker_config = configparser.ConfigParser()
 
@@ -39,7 +39,7 @@ class PackageManager:
             raise NotImplementedError()
 
     @staticmethod
-    def build_statement(path_to_directory, problem):
+    def _build_statement(path_to_directory, problem):
         statement_config = configparser.ConfigParser()
 
         statement_config.add_section('info')
@@ -62,7 +62,7 @@ class PackageManager:
         except OSError:
             logging.error('Cannot write to statement/{0}'.format(path_to_directory.name))
 
-    def build_tests(self, path_to_directory, problem):
+    def _build_tests(self, path_to_directory, problem):
         self.tests_renamer.fit(problem.sample_tests, problem.tests)
 
         path_to_directory = path.Path(path_to_directory.joinpath('tests'))
@@ -70,7 +70,7 @@ class PackageManager:
             path_to_directory.copyfile(test, path_to_directory.joinpath(self.tests_renamer[test]))
 
     @staticmethod
-    def build_config(path_to_directory, problem):
+    def _build_config(path_to_directory, problem):
         config = configparser.ConfigParser()
 
         config.add_section('info')
@@ -96,7 +96,7 @@ class PackageManager:
             logging.error('Cannot write to config.ini')
 
     @staticmethod
-    def make_skeleton(path_to_directory):
+    def _make_skeleton(path_to_directory):
         content_of_format_file = 'bacs/problem/single#simple0'
 
         if path_to_directory.exists():
