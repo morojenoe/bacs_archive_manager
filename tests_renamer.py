@@ -1,14 +1,13 @@
+import re
 import logging
 
 
 class TestRenamer:
-    def __init__(self, input_test_extension, output_test_extension):
-        self.ext_in = input_test_extension
-        self.ext_out = output_test_extension
+    def __init__(self, input_test_re, output_test_re):
+        self.in_re = re.compile(input_test_re)
+        self.out_re = re.compile(output_test_re)
         self.new_name = {}
         self.test_number = 1
-        if self.ext_in == self.ext_out:
-            logging.error('Input and output extensions must be different.')
 
     def _add_test(self, test_in, test_out):
         self.new_name[test_in] = "{0}.in".format(self.test_number)
@@ -17,24 +16,27 @@ class TestRenamer:
 
     def _add_tests(self, path_to_tests):
         tests_in, tests_out = self._split(path_to_tests)
-        tests_in.sort(key=lambda test: int(test))
-        tests_out.sort(key=lambda test: int(test))
+        tests_in.sort()
+        tests_out.sort()
         for test_in, test_out in zip(tests_in, tests_out):
-            self._add_test(test_in, tests_out)
+            self._add_test(test_in, test_out)
 
     def fit(self, sample_tests, main_tests):
         self.new_name.clear()
         self.test_number = 1
-        self._add_tests(sample_tests)
-        self._add_tests(main_tests)
+        if sample_tests is not None:
+            self._add_tests(sample_tests)
+        if main_tests is not None:
+            self._add_tests(main_tests)
 
     def _split(self, path_to_tests):
-        tests_in = [test.name for test in path_to_tests if test.ext == self.ext_in]
-        tests_out = [test.name for test in path_to_tests if test.ext == self.ext_out]
+        tests_in = [test for test in path_to_tests if self.in_re.match(test)]
+        tests_out = [test for test in path_to_tests if self.out_re.match(test)]
         return tests_in, tests_out
 
     def __getitem__(self, test_name):
         if test_name not in self.new_name:
-            logging.error('There is no test with name "{0}" in {1}.', test_name, self.new_name)
+            logging.error('There is no test with name "{0}" in {1}.',
+                          test_name, self.new_name)
             raise KeyError()
         return self.new_name[test_name]
