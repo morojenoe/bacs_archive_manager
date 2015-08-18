@@ -1,27 +1,28 @@
 import logging
-import path.Path
+import path
 import settings
-import configparser.ConfigParser
+import configparser
 
 
 class PackageManager:
     def __init__(self, tests_renamer):
         self.tests_renamer = tests_renamer
 
-    def build_package(self, problem, path_to_directory):
-        path_to_directory = path.Path(path_to_directory).joinpath(problem.ID)
-        self._make_skeleton(path_to_directory)
-        self._build_checker(path_to_directory, problem)
-        self._build_statement(path_to_directory, problem)
-        self._build_tests(path_to_directory, problem)
-        self._build_config(path_to_directory, problem)
+    def build_package(self, problem, dir_path):
 
-    def build_packages(self, problems, path_to_directory):
+        dir_path = path.Path(dir_path).joinpath(problem.id)
+        self._make_skeleton(dir_path)
+        self._build_checker(dir_path, problem)
+        self._build_statement(dir_path, problem)
+        self._build_tests(dir_path, problem)
+        self._build_config(dir_path, problem)
+
+    def build_packages(self, problems, dir_path):
         for problem in problems:
-            self.build_package(problem, path_to_directory)
+            self.build_package(problem, dir_path)
 
-    def _build_checker(self, path_to_directory, problem):
-        path_to_directory = path_to_directory.joinpath('checker')
+    def _build_checker(self, dir_path, problem):
+        dir_path = dir_path.joinpath('checker')
         checker_config = configparser.ConfigParser()
 
         checker_config.add_section('build')
@@ -31,7 +32,7 @@ class PackageManager:
             checker_config.set('build', 'builder', 'none')
             checker_config.set('utility', 'call', 'std/strict/out_stdout')
             try:
-                with path_to_directory.joinpath('config.ini').open('w') as config_file:
+                with dir_path.joinpath('config.ini').open('w') as config_file:
                     checker_config.write(config_file)
             except OSError:
                 logging.error('Cannot write to checker/config.ini')
@@ -39,7 +40,7 @@ class PackageManager:
             raise NotImplementedError()
 
     @staticmethod
-    def _build_statement(path_to_directory, problem):
+    def _build_statement(dir_path, problem):
         statement_config = configparser.ConfigParser()
 
         statement_config.add_section('info')
@@ -48,69 +49,71 @@ class PackageManager:
         statement_config.set('info', 'lang', 'C')
 
         statement_config.set('build', 'builder', 'copy')
-        statement_config.set('source', 'source', problem.statement)
+        statement_config.set('build', 'source', problem.statement)
 
-        if problem.statement is not None:
-            path_to_directory = path_to_directory.joinpath('statement',
-                                                           "{0}.ini".format(path.Path(problem.statement).ext))
-        else:
-            path_to_directory = path_to_directory.joinpath('statement', 'pdf.ini')
+        dir_path = dir_path.joinpath('statement', "{0}.ini".format(
+            path.Path(problem.statement).ext[1:]))
 
         try:
-            with path_to_directory.open('w') as config_file:
+            with dir_path.open('w') as config_file:
                 statement_config.write(config_file)
         except OSError:
-            logging.error('Cannot write to statement/{0}'.format(path_to_directory.name))
+            logging.error(
+                'Cannot write to statement/{0}'.format(dir_path.name))
 
-    def _build_tests(self, path_to_directory, problem):
-        self.tests_renamer.fit(problem.sample_tests, problem.tests)
+    def _build_tests(self, dir_path, problem):
+        self.tests_renamer.fit([t.abspath() for t in problem.sample_tests],
+                               [t.abspath() for t in problem.tests])
 
-        path_to_directory = path.Path(path_to_directory.joinpath('tests'))
+        dir_path = path.Path(dir_path.joinpath('tests'))
         for test in problem.sample_tests + problem.tests:
-            path_to_directory.copyfile(test, path_to_directory.joinpath(self.tests_renamer[test]))
+            test.copyfile(
+                dir_path.joinpath(self.tests_renamer[test.abspath()]))
 
     @staticmethod
-    def _build_config(path_to_directory, problem):
+    def _build_config(dir_path, problem):
         config = configparser.ConfigParser()
 
         config.add_section('info')
         config.add_section('resource_limits')
-        config.add_section('files')
 
         config.set('info', 'name', problem.name)
         config.set('info', 'maintainers', settings.MAINTAINERS)
         config.set('info', 'source', problem.source)
 
-        config.set('resource_limits', 'time',
-                   problem.time_limit if problem.time_limit is not None else settings.TIME_LIMIT_BY_DEFAULT)
-        config.set('resource_limits', 'memory',
-                   problem.memory_limit if problem.time_limit is not None else settings.MEMORY_LIMIT_BY_DEFAULT)
+        config.set('resource_limits', 'time', problem.time_limit)
+        config.set('resource_limits', 'memory', problem.memory_limit)
 
-        config.set('files', 'stdin', problem.stdin)
-        config.set('files', 'stdout', problem.stdout)
+        if (problem.stdin is not None) or (problem.stdout is not None):
+            config.add_section('files')
+            if problem.stdin is not None:
+                config.set('files', 'stdin', problem.stdin)
+            if problem.stdout is not None:
+                config.set('files', 'stdout', problem.stdout)
 
         try:
-            with path_to_directory.joinpath('config.ini').open('w') as config_file:
+            with dir_path.joinpath('config.ini').open('w') as config_file:
                 config.write(config_file)
         except OSError:
             logging.error('Cannot write to config.ini')
 
     @staticmethod
-    def _make_skeleton(path_to_directory):
+    def _make_skeleton(dir_path):
         content_of_format_file = 'bacs/problem/single#simple0'
 
-        if path_to_directory.exists():
-            logging.warning('{path} already exists'.format(path=path_to_directory))
+        if dir_path.exists():
+            logging.warning('{0} already exists' % dir_path)
 
         try:
-            path_to_directory.joinpath('checker').makedirs_p()
-            path_to_directory.joinpath('misc').makedirs_p()
-            path_to_directory.joinpath('statement').makedirs_p()
-            path_to_directory.joinpath('tests').makedirs_p()
-            with path_to_directory.joinpath('format').open() as format_file:
+            dir_path.joinpath('checker').makedirs_p()
+            dir_path.joinpath('misc').makedirs_p()
+            dir_path.joinpath('statement').makedirs_p()
+            dir_path.joinpath('tests').makedirs_p()
+            with dir_path.joinpath('format').open('w') as format_file:
                 format_file.write(content_of_format_file)
-        except (OSError, IOError):
-            logging.error('Cannot write to {path}'.format(path_to_directory))
+        except (OSError, IOError) as error:
+            logging.error('Cannot write to {path}'.format(dir_path))
+            logging.exception(error)
             return False
 
         return True
