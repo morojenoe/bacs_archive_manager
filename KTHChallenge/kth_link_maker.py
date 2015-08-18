@@ -12,7 +12,8 @@ class KTHChallengeLinkMaker(base_link_maker.BaseLinkMaker):
             url += str(contest_description["year"])
 
         links.append("{0}/problems.pdf".format(url))
-        links.append("{0}/{1}".format(url, self.test_data_name(contest_description)))
+        links.append(
+            "{0}/{1}".format(url, self.test_data_name(contest_description)))
 
         return links
 

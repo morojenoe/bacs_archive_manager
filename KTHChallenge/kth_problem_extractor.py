@@ -1,16 +1,18 @@
-import base_problem_extractor
+from base_problem_extractor import BaseProblemExtractor
 import path
 import logging
 import problem
 
 
-class KTHChallengeProblemExtractor(base_problem_extractor.BaseProblemExtractor):
+class KTHChallengeProblemExtractor(BaseProblemExtractor):
     def extract(self, path_to_contest, contest_description):
         tests_mask = "*.[ia]*"
         path_to_contest = path.Path(path_to_contest)
         dirs = path_to_contest.dirs()
         if len(dirs) != 1:
-            logging.warning("Expected number of directories 1, found {0}".format(len(dirs)))
+            logging.warning(
+                "Expected number of directories 1, found {0}".format(
+                    len(dirs)))
         problem_dirs = dirs[0].dirs()
 
         if contest_description["year"] >= 2013:
@@ -27,7 +29,8 @@ class KTHChallengeProblemExtractor(base_problem_extractor.BaseProblemExtractor):
                 task.sample_tests = samples_dir.files(tests_mask)
             if tests_dir.exists():
                 task.tests = tests_dir.files(tests_mask)
-            task.id = self._get_problem_id("{0}_{1}".format(self.contest_short_name, problem_dir.name))
+            task.id = self._get_problem_id(
+                "{0}_{1}".format(self.contest_short_name, problem_dir.name))
             problems.append(task)
 
         return problems
@@ -37,7 +40,8 @@ class KTHChallengeProblemExtractor(base_problem_extractor.BaseProblemExtractor):
         for problem_dir in problem_dirs:
             task = problem.Problem()
             task.tests = problem_dir.files(tests_mask)
-            task.id = self._get_problem_id("{0}_{1}".format(self.contest_short_name, problem_dir.name))
+            task.id = self._get_problem_id(
+                "{0}_{1}".format(self.contest_short_name, problem_dir.name))
             problems.append(task)
 
         return problems
