@@ -9,7 +9,6 @@ class PackageManager:
         self.tests_renamer = tests_renamer
 
     def build_package(self, problem, dir_path):
-
         dir_path = path.Path(dir_path).joinpath(problem.id)
         self._make_skeleton(dir_path)
         self._build_checker(dir_path, problem)
@@ -41,6 +40,12 @@ class PackageManager:
 
     @staticmethod
     def _build_statement(dir_path, problem):
+        dir_path = dir_path.joinpath('statement')
+        dest_file_name = dir_path.joinpath(
+            'problem{}'.format(path.Path(problem.statement).ext))
+        config_path = dir_path.joinpath(
+            "{0}.ini".format(path.Path(problem.statement).ext[1:]))
+
         statement_config = configparser.ConfigParser()
 
         statement_config.add_section('info')
@@ -49,17 +54,21 @@ class PackageManager:
         statement_config.set('info', 'lang', 'C')
 
         statement_config.set('build', 'builder', 'copy')
-        statement_config.set('build', 'source', problem.statement)
-
-        dir_path = dir_path.joinpath('statement', "{0}.ini".format(
-            path.Path(problem.statement).ext[1:]))
+        statement_config.set('build', 'source', dest_file_name.name)
 
         try:
-            with dir_path.open('w') as config_file:
+            with config_path.open('w') as config_file:
                 statement_config.write(config_file)
-        except OSError:
+        except OSError as error:
             logging.error(
                 'Cannot write to statement/{0}'.format(dir_path.name))
+            logging.exception(error)
+
+        try:
+            path.Path(problem.statement).copyfile(dest_file_name)
+        except OSError as error:
+            logging.error('Cannot copy problem statement')
+            logging.exception(error)
 
     def _build_tests(self, dir_path, problem):
         self.tests_renamer.fit([t.abspath() for t in problem.sample_tests],
@@ -102,7 +111,7 @@ class PackageManager:
         content_of_format_file = 'bacs/problem/single#simple0'
 
         if dir_path.exists():
-            logging.warning('{0} already exists' % dir_path)
+            logging.warning('{0} already exists'.format(dir_path))
 
         try:
             dir_path.joinpath('checker').makedirs_p()
@@ -112,7 +121,7 @@ class PackageManager:
             with dir_path.joinpath('format').open('w') as format_file:
                 format_file.write(content_of_format_file)
         except (OSError, IOError) as error:
-            logging.error('Cannot write to {path}'.format(dir_path))
+            logging.error('Cannot write to {0}'.format(dir_path))
             logging.exception(error)
             return False
 
