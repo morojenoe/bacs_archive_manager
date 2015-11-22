@@ -29,5 +29,5 @@ class BaseDownloader:
         link = urllib.parse.urlparse(link).path
         return path.Path(link).name
 
-    def download_additional_data(self, path_to_problem_dir):
+    def download_additional_data(self, dir_path, links, contest_description):
         pass
