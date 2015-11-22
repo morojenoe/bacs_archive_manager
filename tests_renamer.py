@@ -36,7 +36,8 @@ class TestRenamer:
 
     def __getitem__(self, test_name):
         if test_name not in self.new_name:
-            logging.error('There is no test with name "{0}" in {1}.',
-                          test_name, self.new_name)
+            logging.error('There is no test with name "{0}" in {1}.'.format(
+                test_name,
+                self.new_name))
             raise KeyError()
         return self.new_name[test_name]
