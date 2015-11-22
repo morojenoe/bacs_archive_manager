@@ -13,13 +13,14 @@ class KTHChallengeProblemExtractor(BaseProblemExtractor):
             logging.warning(
                 "Expected number of directories 1, found {0}".format(
                     len(dirs)))
-        problem_dirs = dirs[0].dirs()
+        problem_dirs = dirs[0].dirs()[0].dirs()
 
         if contest_description["year"] >= 2013:
-            return self._extract_new(problem_dirs, tests_mask)
-        return self._extract_old(problem_dirs, tests_mask)
+            return self._extract_new(problem_dirs, tests_mask,
+                                     contest_description)
+        return self._extract_old(problem_dirs, tests_mask, contest_description)
 
-    def _extract_new(self, problem_dirs, tests_mask):
+    def _extract_new(self, problem_dirs, tests_mask, contest_description):
         problems = []
         for problem_dir in problem_dirs:
             task = problem.Problem()
@@ -30,7 +31,10 @@ class KTHChallengeProblemExtractor(BaseProblemExtractor):
             if tests_dir.exists():
                 task.tests = tests_dir.files(tests_mask)
             task.id = self._get_problem_id(
-                "{0}_{1}".format(self.contest_short_name, problem_dir.name))
+                "kth_challenge_{0}_{1}".format(contest_description["year"],
+                                               problem_dir.name))
+            task.source = "KTH Challenge {0}".format(
+                contest_description["year"])
             problems.append(task)
 
         return problems
