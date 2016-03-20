@@ -1,7 +1,9 @@
-from base_problem_extractor import BaseProblemExtractor
-import path
 import logging
-import problem
+
+import path
+
+from problem_source.base.base_problem_extractor import BaseProblemExtractor
+from src import problem
 
 
 class KTHChallengeProblemExtractor(BaseProblemExtractor):

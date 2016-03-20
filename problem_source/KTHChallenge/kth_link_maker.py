@@ -1,4 +1,4 @@
-import base_link_maker
+from problem_source.base import base_link_maker
 
 
 class KTHChallengeLinkMaker(base_link_maker.BaseLinkMaker):

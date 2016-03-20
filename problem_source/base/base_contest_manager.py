@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractproperty
+
 import path
-import archive_extractor
+
+from tools import archive_extractor
 
 
 class BaseContestManager(metaclass=ABCMeta):

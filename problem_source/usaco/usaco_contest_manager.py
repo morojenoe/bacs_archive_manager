@@ -1,4 +1,4 @@
-import base_contest_manager
+from problem_source.base import base_contest_manager
 
 
 class UsacoContestManager(base_contest_manager.BaseContestManager):

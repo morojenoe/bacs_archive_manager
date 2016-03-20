@@ -1,6 +1,7 @@
-import base_problem_extractor
 import path
-import problem
+
+from problem_source.base import base_problem_extractor
+from src import problem
 
 
 class UsacoProblemExtractor(base_problem_extractor.BaseProblemExtractor):

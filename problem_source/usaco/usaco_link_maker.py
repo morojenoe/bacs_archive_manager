@@ -1,5 +1,6 @@
-import base_link_maker
 import lxml.html
+
+from problem_source.base import base_link_maker
 
 
 class UsacoLinkMaker(base_link_maker.BaseLinkMaker):

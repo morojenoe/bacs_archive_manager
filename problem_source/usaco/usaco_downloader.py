@@ -1,8 +1,10 @@
-import path
-import data_downloader
-from lxml.html.builder import HTML, BODY, PRE
-import lxml.html
 import urllib.request
+
+import lxml.html
+import path
+from lxml.html.builder import HTML, BODY, PRE
+
+from problem_source.base import data_downloader
 
 
 class UsacoDownloader(data_downloader.BaseDownloader):

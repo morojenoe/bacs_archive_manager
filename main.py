@@ -1,17 +1,18 @@
 import argparse
 import logging
-from KTHChallenge.kth_problem_extractor import KTHChallengeProblemExtractor
-from KTHChallenge.kth_link_maker import KTHChallengeLinkMaker
-from KTHChallenge.kth_contest_manager import KTHChallengeContestManager
-from data_downloader import BaseDownloader
-from package_manager import PackageManager
-import settings
-from tests_renamer import TestRenamer
 
-from usaco.usaco_contest_manager import UsacoContestManager
-from usaco.usaco_downloader import UsacoDownloader
-from usaco.usaco_link_maker import UsacoLinkMaker
-from usaco.usaco_problem_extractor import UsacoProblemExtractor
+from problem_source.KTHChallenge.kth_link_maker import KTHChallengeLinkMaker
+from problem_source.KTHChallenge.kth_problem_extractor import KTHChallengeProblemExtractor
+from problem_source.usaco.usaco_contest_manager import UsacoContestManager
+from problem_source.usaco.usaco_downloader import UsacoDownloader
+from problem_source.usaco.usaco_problem_extractor import UsacoProblemExtractor
+
+import settings
+from problem_source.KTHChallenge.kth_contest_manager import KTHChallengeContestManager
+from problem_source.base.data_downloader import BaseDownloader
+from problem_source.usaco.usaco_link_maker import UsacoLinkMaker
+from src.package_manager import PackageManager
+from tools.tests_renamer import TestRenamer
 
 contest_managers = [
     KTHChallengeContestManager(
