@@ -1,6 +1,6 @@
-from abc import ABCMeta, abstractproperty
+from abc import ABCMeta, abstractmethod
 
-import path
+import pathlib
 
 from tools import archive_extractor
 
@@ -15,7 +15,7 @@ class BaseContestManager(metaclass=ABCMeta):
         self.path_to_directory = path_to_directory
 
     def download_contest(self, contest_description):
-        tmp_directory = path.Path(self.path_to_directory).joinpath('TEMP')
+        tmp_directory = pathlib.Path(self.path_to_directory).joinpath('TEMP')
         links = self.link_maker.get_links(contest_description)
         self.downloader.download_data(tmp_directory, links)
         links = self.link_maker.get_additional_links(contest_description)
@@ -29,21 +29,24 @@ class BaseContestManager(metaclass=ABCMeta):
     @staticmethod
     def extract_archives(tmp_directory):
         extractor = archive_extractor.ArchiveExtractor()
-        tmp_directory = path.Path(tmp_directory)
-        for file in tmp_directory.files():
-            if extractor.is_archive(file):
-                arch_dir = tmp_directory.joinpath(file.name.splitext()[0])
-                arch_dir.makedirs_p()
+        tmp_directory = pathlib.Path(tmp_directory)
+        for file in tmp_directory.iterdir():
+            if file.is_file() and extractor.is_archive(file):
+                arch_dir = tmp_directory.joinpath(file.stem)
+                arch_dir.mkdir(exist_ok=True)
                 extractor.extract(file, arch_dir)
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def short_name(self):
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def long_name(self):
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def main_link(self):
         pass

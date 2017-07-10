@@ -18,16 +18,25 @@ class TestRenamer:
         tests_in, tests_out = self._split(path_to_tests)
         tests_in.sort()
         tests_out.sort()
+        if len(tests_in) != len(tests_out):
+            logging.error('{} input tests found, {} output tests found, '
+                          'the number of tests must match.'
+                          .format(len(tests_in), len(tests_out)))
+            return False
         for test_in, test_out in zip(tests_in, tests_out):
             self._add_test(test_in, test_out)
+        return True
 
     def fit(self, sample_tests, main_tests):
         self.new_name.clear()
         self.test_number = 1
         if sample_tests is not None:
-            self._add_tests(sample_tests)
+            if not self._add_tests(sample_tests):
+                return False
         if main_tests is not None:
-            self._add_tests(main_tests)
+            if not self._add_tests(main_tests):
+                return False
+        return True
 
     def _split(self, path_to_tests):
         tests_in = [test for test in path_to_tests if self.in_re.match(test)]

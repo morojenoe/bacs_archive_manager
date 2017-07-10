@@ -1,12 +1,13 @@
 import logging
-import path
+import pathlib
 import tarfile
 import zipfile
 
 
 class ArchiveExtractor:
     def extract(self, path_to_file, path_to_extraction_dir):
-        path_to_file = path.Path(path_to_file)
+        path_to_file = str(path_to_file)
+        path_to_extraction_dir = str(path_to_extraction_dir)
         if tarfile.is_tarfile(path_to_file):
             self._extract_tar(path_to_file, path_to_extraction_dir)
         else:
@@ -14,6 +15,7 @@ class ArchiveExtractor:
 
     @staticmethod
     def is_archive(path_to_file):
+        path_to_file = str(path_to_file)
         return (tarfile.is_tarfile(path_to_file)) or (
             zipfile.is_zipfile(path_to_file))
 

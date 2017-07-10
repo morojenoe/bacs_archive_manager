@@ -32,11 +32,11 @@ contest_managers = [
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', )
-    parser.add_argument('--source', help='')
-    parser.add_argument('--year', help='', type=int)
+    parser.add_argument('command', help='get or list')
+    parser.add_argument('--source', help='', required=True)
+    parser.add_argument('--year', help='', type=int, required=True)
     parser.add_argument('--month', help='')
-    parser.add_argument('--division', help='')
+    parser.add_argument('--division', help='not for all contests')
     parser.add_argument('--lang', help='')
     return vars(parser.parse_args())
 
@@ -55,9 +55,18 @@ def process_list_command():
                                             cm.main_link))
 
 
-def main():
+def check_settings():
     if settings.MAINTAINERS is None:
         logging.error('Please set the MAINTAINERS field in settings.py')
+        return False
+    if settings.PATH_TO_PROBLEMS is None:
+        logging.error('Please set the PATH_TO_PROBLEMS in setting.py')
+        return False
+    return True
+
+
+def main():
+    if not check_settings():
         return
     contest_description = parse_args()
     if contest_description['command'] == 'get':

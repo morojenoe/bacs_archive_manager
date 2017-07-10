@@ -1,7 +1,7 @@
 import urllib.request
 
 import lxml.html
-import path
+import pathlib
 from lxml.html.builder import HTML, BODY, PRE
 
 from problem_source.base import data_downloader
@@ -15,8 +15,8 @@ class UsacoDownloader(data_downloader.BaseDownloader):
             page = page.replace(' <= ', ' &lt;= ')
             page = page.replace(' < ', ' &lt; ')
             page = lxml.html.fromstring(page)
-            file_name = self.get_file_name_from_link(link[1])
-            file_name = path.Path(file_name).splitext()[0] + ".html"
+            file_name = pathlib.Path(self.get_file_name_from_link(link[1])).stem
+            file_name = pathlib.Path(file_name).name + ".html"
             statement = page.xpath("//div[@class='problem-text']")[0]
 
             year = contest_description["year"]
@@ -26,6 +26,6 @@ class UsacoDownloader(data_downloader.BaseDownloader):
             else:
                 statement = HTML(BODY(statement))
 
-            with open(dir_path.joinpath(file_name), 'w') as statement_file:
+            with open(str(dir_path.joinpath(file_name)), 'w') as statement_file:
                 statement_file.write(
                     str(lxml.html.etree.tostring(statement), encoding='utf-8'))

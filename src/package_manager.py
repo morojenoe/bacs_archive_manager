@@ -1,7 +1,8 @@
 import logging
-import path
+import pathlib
 import settings
 import configparser
+import shutil
 
 
 class PackageManager:
@@ -9,7 +10,7 @@ class PackageManager:
         self.tests_renamer = tests_renamer
 
     def build_package(self, problem, dir_path):
-        dir_path = path.Path(dir_path).joinpath(problem.id)
+        dir_path = pathlib.Path(dir_path).joinpath(problem.id)
         self._make_skeleton(dir_path)
         self._build_checker(dir_path, problem)
         self._build_statement(dir_path, problem)
@@ -42,9 +43,9 @@ class PackageManager:
     def _build_statement(dir_path, problem):
         dir_path = dir_path.joinpath('statement')
         dest_file_name = dir_path.joinpath(
-            'problem{}'.format(path.Path(problem.statement).ext))
+            'problem{}'.format(pathlib.Path(problem.statement).suffix))
         config_path = dir_path.joinpath(
-            "{0}.ini".format(path.Path(problem.statement).ext[1:]))
+            "{0}.ini".format(pathlib.Path(problem.statement).suffix[1:]))
 
         statement_config = configparser.ConfigParser()
 
@@ -65,19 +66,23 @@ class PackageManager:
             logging.exception(error)
 
         try:
-            path.Path(problem.statement).copyfile(dest_file_name)
+            shutil.copyfile(str(problem.statement), str(dest_file_name))
         except OSError as error:
             logging.error('Cannot copy problem statement')
             logging.exception(error)
 
     def _build_tests(self, dir_path, problem):
-        self.tests_renamer.fit([t.abspath() for t in problem.sample_tests],
-                               [t.abspath() for t in problem.tests])
+        if not self.tests_renamer.fit([str(t) for t in problem.sample_tests],
+                                      [str(t) for t in problem.tests]):
+            logging.error('Please manage test for {} manually.'.format(
+                problem.name))
+            return
 
-        dir_path = path.Path(dir_path.joinpath('tests'))
+        dir_path = pathlib.Path(dir_path.joinpath('tests'))
         for test in problem.sample_tests + problem.tests:
-            test.copyfile(
-                dir_path.joinpath(self.tests_renamer[test.abspath()]))
+            shutil.copyfile(str(test),
+                            str(dir_path.joinpath(
+                                self.tests_renamer[str(test)])))
 
     @staticmethod
     def _build_config(dir_path, problem):
@@ -114,10 +119,10 @@ class PackageManager:
             logging.warning('{0} already exists'.format(dir_path))
 
         try:
-            dir_path.joinpath('checker').makedirs_p()
-            dir_path.joinpath('misc').makedirs_p()
-            dir_path.joinpath('statement').makedirs_p()
-            dir_path.joinpath('tests').makedirs_p()
+            dir_path.joinpath('checker').mkdir(exist_ok=True, parents=True)
+            dir_path.joinpath('misc').mkdir(exist_ok=True, parents=True)
+            dir_path.joinpath('statement').mkdir(exist_ok=True, parents=True)
+            dir_path.joinpath('tests').mkdir(exist_ok=True, parents=True)
             with dir_path.joinpath('format').open('w') as format_file:
                 format_file.write(content_of_format_file)
         except (OSError, IOError) as error:
