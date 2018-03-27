@@ -14,6 +14,10 @@ class BaseContestManager(metaclass=ABCMeta):
         self.package_manager = package_manager
         self.path_to_directory = path_to_directory
 
+    def is_exists(self, contest_description):
+        links = self.link_maker.get_links(contest_description)
+        return len(list(links)) > 0
+
     def download_contest(self, contest_description):
         tmp_directory = pathlib.Path(self.path_to_directory).joinpath('TEMP')
         links = self.link_maker.get_links(contest_description)
@@ -35,6 +39,10 @@ class BaseContestManager(metaclass=ABCMeta):
                 arch_dir = tmp_directory.joinpath(file.stem)
                 arch_dir.mkdir(exist_ok=True)
                 extractor.extract(file, arch_dir)
+
+    @abstractmethod
+    def params_must_be_set(self, contest_description):
+        pass
 
     @property
     @abstractmethod

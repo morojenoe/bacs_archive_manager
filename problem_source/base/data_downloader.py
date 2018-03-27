@@ -9,7 +9,7 @@ import logging
 class BaseDownloader:
     def download_data(self, path_to_problem_dir, links):
         path_to_problem_dir = pathlib.Path(path_to_problem_dir)
-        path_to_problem_dir.mkdir(exist_ok=True)
+        path_to_problem_dir.mkdir(parents=True, exist_ok=True)
         for link in links:
             file_name = self.get_file_name_from_link(link)
             path_to_file = path_to_problem_dir.joinpath(file_name)

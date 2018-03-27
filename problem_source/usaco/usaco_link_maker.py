@@ -22,15 +22,19 @@ class UsacoLinkMaker(base_link_maker.BaseLinkMaker):
 
     @staticmethod
     def _get_links_to_problem_data(year, month, lang):
+        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
         year %= 100
-        result = {"gold": [], "silver": [], "bronze": []}
+        month = months[month]
+
+        result = {"gold": [], "silver": [], "bronze": [], "platinum": []}
         base_url = "http://usaco.org/"
         url = (base_url + "index.php?page={}{}problems").format(month, year)
         page = lxml.html.parse(url)
         if len(page.xpath(".//div[@class='panel historypanel']")) == 0:
             page = lxml.html.parse(url.replace("problems", "results"))
 
-        division = ["gold", "silver", "bronze"]
+        division = ["gold", "silver", "bronze", "platinum"]
         current_division = -1
 
         for node in page.xpath(".//div[@class='panel historypanel']"):
